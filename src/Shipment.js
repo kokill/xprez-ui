@@ -82,9 +82,14 @@ class Shipment extends React.Component {
             <td>{Number(p.lng).toFixed(2) || 'N/A'}</td>
           </tr>
           )}
-          
       </tbody>
-    </table>
+      </table>
+      {!!locationList.length && <MapBox
+            name="mapBox"
+            locations={locationList}
+            showStatic={true}
+            initialLocation={{lat: 26.406691, lng: -81.810533}}
+      /> }
       </div>
     )
   }
@@ -370,14 +375,14 @@ class Shipment extends React.Component {
               <button type="button" className="btn btn-primary btn-block" onClick={this.addLocation}>SAVE</button>
             </div>
           </Rodal>
-          {showLocationHistory && <Rodal height={300}
+          {showLocationHistory && <Rodal height={500}
             width={550}
             customStyles={{overflowY: 'scroll'}}
             visible={showLocationHistory}
             onClose={() => this.setState({showLocationHistory: false})}>
             {this.showLocationData(currentShipment.locationReadings)}
           </Rodal> }
-          {showAllDocuments && <Rodal width={'600'} height={300}
+          {showAllDocuments && <Rodal width={600} height={300}
             customStyles={{overflowY: 'scroll'}}
             visible={showAllDocuments}
             onClose={() => this.setState({showAllDocuments: false})}>

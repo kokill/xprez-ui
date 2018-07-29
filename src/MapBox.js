@@ -28,13 +28,45 @@ class GMap extends Component {
     that.map = {};
   }
   componentDidMount() {
-    this.setLocation(this.props);
+    if(this.props.showStatic) {
+      this.setStaticLocation(this.props);
+    } else {
+      this.setLocation(this.props);
+    }
   }
   componentWillReceiveProps(nextProps) {
     const { lat: prevLat, lng: prevLng } = _.get(this.props, 'location', '');
     const { lat, lng } = _.get(nextProps, 'location', '');
     if (prevLat !== lat || prevLng !== lng) {
       this.updateLocation(lat, lng);
+    }
+  }
+  setStaticLocation({locations}) {
+    const that = this;
+    const gMapDiv = ReactDOM.findDOMNode(that.refs.gmap);
+    var bounds = new google.maps.LatLngBounds();
+    
+    var map = new google.maps.Map(gMapDiv, {
+      zoom: 10,
+      center: new google.maps.LatLng(19.08, 72.88),
+      mapTypeId: google.maps.MapTypeId.ROADMAP
+    });
+    var infowindow = new google.maps.InfoWindow();
+    var marker, i;
+    for (i = 0; i < locations.length; i++) {
+      var position = new google.maps.LatLng(locations[i].lat, locations[i].lng);
+      marker = new google.maps.Marker({
+        position: position,
+        map: map
+      });
+      bounds.extend(position);
+      google.maps.event.addListener(marker, 'click', (function(marker, i) {
+        return function() {
+          infowindow.setContent(locations[i].city);
+          infowindow.open(map, marker);
+        }
+      })(marker, i));
+      map.fitBounds(bounds);
     }
   }
   setLocation(props) {
@@ -120,7 +152,7 @@ class GMap extends Component {
       margin: '10px 0 0 12px', padding: '0 11px 0 13px', width: '60%', height: '30px',  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.3)'};
     return (
       <div style={{ backgroundColor: '#fff' }}>
-        <input id="gmap-search" className="pt-input" style={inputStyles} type="text" placeholder="Search"/>
+        {!this.props.showStatic && <input id="gmap-search" className="pt-input" style={inputStyles} type="text" placeholder="Search"/>}
         <div className={props.className} style={{ minHeight: '210px' }} ref='gmap'></div>
       </div>
     );
