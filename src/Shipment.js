@@ -4,6 +4,7 @@ import _ from 'lodash';
 import Loader from './Loader';
 import moment from 'moment';
 import Rodal from 'rodal';
+import MapBox from './MapBox';
 // include styles
 import 'rodal/lib/rodal.css';
 import { 
@@ -66,6 +67,8 @@ class Shipment extends React.Component {
               <th scope="col">City</th>
               <th scope="col">State</th>
               <th scope="col">Date/Time</th>
+              <th scope="col">Latitude</th>
+              <th scope="col">Longitude</th>
             </tr>
           </thead>
           <tbody>
@@ -75,6 +78,8 @@ class Shipment extends React.Component {
             <td>{p.state}</td>
             <td>{p.city}</td> 
             <td>{moment(p.timestamp).format('lll')}</td> 
+            <td>{Number(p.lat).toFixed(2) || 'N/A'}</td>
+            <td>{Number(p.lng).toFixed(2) || 'N/A'}</td>
           </tr>
           )}
           
@@ -260,6 +265,15 @@ class Shipment extends React.Component {
       this.fetchData();
     })
   }
+  handleMapChange = (addr) => {
+    const st = this.state.location;
+    _.set(st, 'lat', addr.loc[1]);
+    _.set(st, 'lng', addr.loc[0]);
+    _.set(st, 'city', addr.city);
+    _.set(st, 'state', addr.state);
+    console.log(st);
+    this.setState({location: st});
+  }
   getList = (item) => {
     const cName = item.status === 'IN_TRANSIT' ? 'border-primary' : 'text-white bg-success'
     return (
@@ -343,60 +357,22 @@ class Shipment extends React.Component {
             {this.getForm()}
           </div>
           <Rodal
-            height={300}
+            height={320}
             visible={showAddLocationModal}
             onClose={() => this.setState({showAddLocationModal: false})}>
-          <div className="form-group">
-            <label className="col-form-label col-form-label-sm" htmlFor="inputLarge2">City</label>
-            <input
-              onChange={this.handleLocationChange}
-              className="form-control form-control-sm"
-              type="text"
-              value={location.city}
-              name="city"
-              placeholder="City"
+            <MapBox
+                name="mapBox"
+                initialLocation={{lat: 26.406691, lng: -81.810533}}
+                onLocationChange={this.handleMapChange}
             />
-          </div>
-          <div className="form-group">
-            <label className="col-form-label col-form-label-sm" htmlFor="inputLarge2">State</label>
-            <input
-              onChange={this.handleLocationChange}
-              className="form-control form-control-sm"
-              value={location.state}
-              type="text"
-              name="state"
-              placeholder="State"
-            />
-          </div>
-          <div className="form-group row col-md-12">
-            <div className="col-md-5">
-            <label className="col-form-label col-form-label-sm" htmlFor="inputLarge2">Latitude</label>
-            <input
-              onChange={this.handleLocationChange}
-              className="form-control form-control-sm"
-              type="number"
-              name="lat"
-              placeholder="Latitude"
-            />
-            </div>
-            <div className="col-md-2" />
-            <div className="col-md-5">
-            <label className="col-form-label col-form-label-sm" htmlFor="inputLarge2">Longitude</label>
-            <input
-              onChange={this.handleLocationChange}
-              className="form-control form-control-sm"
-              type="number"
-              name="lng"
-              placeholder="Longitude"
-            />
-            </div>
-            
-            </div>
+            <br />
             <div className="form-group">
               <button type="button" className="btn btn-primary btn-block" onClick={this.addLocation}>SAVE</button>
             </div>
           </Rodal>
           {showLocationHistory && <Rodal height={300}
+            width={550}
+            customStyles={{overflowY: 'scroll'}}
             visible={showLocationHistory}
             onClose={() => this.setState({showLocationHistory: false})}>
             {this.showLocationData(currentShipment.locationReadings)}
